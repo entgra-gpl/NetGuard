@@ -1,0 +1,50 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion = 30
+
+    defaultConfig {
+        minSdkVersion 17
+        targetSdkVersion 30
+        archivesBaseName = "NetGuard"
+
+        externalNativeBuild {
+            cmake {
+                cppFlags ""
+                arguments "-DANDROID_PLATFORM=android-22"
+                // https://developer.android.com/ndk/guides/cmake.html
+            }
+        }
+
+        //ndkVersion "21.0.6113669"
+        ndk {
+            // https://developer.android.com/ndk/guides/abis.html#sa
+            abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
+        }
+    }
+
+    lintOptions {
+        disable 'MissingTranslation'
+    }
+
+    externalNativeBuild {
+        cmake {
+            path "CMakeLists.txt"
+        }
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled = false
+        }
+    }
+    compileOptions {
+        sourceCompatibility = 1.7
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'androidx.preference:preference:1.1.0'
+    implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.0.0'
+}

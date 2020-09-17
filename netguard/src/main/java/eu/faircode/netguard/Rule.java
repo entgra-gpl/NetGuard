@@ -44,6 +44,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import io.entgra.netguard.R;
+
 public class Rule {
     private static final String TAG = "NetGuard.Rule";
 
@@ -105,19 +107,19 @@ public class Rule {
 
     private static boolean isSystem(String packageName, Context context) {
         if (!cacheSystem.containsKey(packageName))
-            cacheSystem.put(packageName, Util.isSystem(packageName, context));
+            cacheSystem.put(packageName, JNIUtil.isSystem(packageName, context));
         return cacheSystem.get(packageName);
     }
 
     private static boolean hasInternet(String packageName, Context context) {
         if (!cacheInternet.containsKey(packageName))
-            cacheInternet.put(packageName, Util.hasInternet(packageName, context));
+            cacheInternet.put(packageName, JNIUtil.hasInternet(packageName, context));
         return cacheInternet.get(packageName);
     }
 
     private static boolean isEnabled(PackageInfo info, Context context) {
         if (!cacheEnabled.containsKey(info))
-            cacheEnabled.put(info, Util.isEnabled(info, context));
+            cacheEnabled.put(info, JNIUtil.isEnabled(info, context));
         return cacheEnabled.get(info);
     }
 

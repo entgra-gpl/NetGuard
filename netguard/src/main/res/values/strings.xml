@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name" translatable="false">NetGuard</string>
+    <string name="msg_start_failed">Android refused to start the VPN service at this moment. This is likely because of a bug in your Android version.</string>
+
+    <string name="title_root">root</string>
+    <string name="title_mediaserver">mediaserver</string>
+    <string name="title_gpsdaemon" translatable="false">GPS daemon</string>
+    <string name="title_dnsdaemon" translatable="false">DNS daemon</string>
+    <string name="title_nobody">nobody</string>
+</resources>

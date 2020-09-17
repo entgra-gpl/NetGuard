@@ -1,9 +1,5 @@
 apply plugin: 'com.android.application'
 
-def keystorePropertiesFile = rootProject.file("keystore.properties")
-def keystoreProperties = new Properties()
-keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
-
 android {
     compileSdkVersion = 30
 
@@ -14,38 +10,10 @@ android {
         targetSdkVersion 30
         versionCode = 2020082601
         archivesBaseName = "NetGuard-v$versionName"
-
-        externalNativeBuild {
-            cmake {
-                cppFlags ""
-                arguments "-DANDROID_PLATFORM=android-22"
-                // https://developer.android.com/ndk/guides/cmake.html
-            }
-        }
-
-        //ndkVersion "21.0.6113669"
-        ndk {
-            // https://developer.android.com/ndk/guides/abis.html#sa
-            abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
-        }
-    }
-    signingConfigs {
-        release {
-            storeFile file(keystoreProperties['storeFile'])
-            storePassword keystoreProperties['storePassword']
-            keyAlias keystoreProperties['keyAlias']
-            keyPassword keystoreProperties['keyPassword']
-        }
     }
 
     lintOptions {
         disable 'MissingTranslation'
-    }
-
-    externalNativeBuild {
-        cmake {
-            path "CMakeLists.txt"
-        }
     }
 
     buildTypes {
@@ -53,19 +21,9 @@ android {
             minifyEnabled = true
             useProguard = true
             proguardFiles.add(file('proguard-rules.pro'))
-            signingConfig signingConfigs.release
             buildConfigField "boolean", "PLAY_STORE_RELEASE", "false"
             buildConfigField "String", "HOSTS_FILE_URI", "\"https://www.netguard.me/hosts\""
             buildConfigField "String", "GITHUB_LATEST_API", "\"https://api.github.com/repos/M66B/NetGuard/releases/latest\""
-        }
-        play {
-            minifyEnabled = true
-            useProguard = true
-            signingConfig signingConfigs.release
-            proguardFiles.add(file('proguard-rules.pro'))
-            buildConfigField "boolean", "PLAY_STORE_RELEASE", "true"
-            buildConfigField "String", "HOSTS_FILE_URI", "\"\""
-            buildConfigField "String", "GITHUB_LATEST_API", "\"\""
         }
         debug {
             minifyEnabled = true
@@ -80,6 +38,8 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    implementation project(":netguard")
 
     // https://developer.android.com/jetpack/androidx/releases/
     implementation 'androidx.appcompat:appcompat:1.1.0'
