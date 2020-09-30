@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">NetGuard</string>
+    <string name="app_name" translatable="false">Entgra Firewall</string>
     <string name="app_description">NetGuard provides simple and advanced ways to block access to the internet - no root required. Apps and addresses can individually be allowed or denied access to your Wi-Fi and/or mobile connection.</string>
     <string name="app_copyright" translatable="false">Copyright \u00A9 2015–2019 by M. Bokhorst (M66B)</string>
     <string name="app_android">NetGuard requires Android 5.1 or later</string>
@@ -175,9 +175,9 @@
     <string-array name="default_wifi_home"></string-array>
 
     <string name="msg_sure">Are you sure?</string>
-    <string name="msg_started">Enforcing rules</string>
-    <string name="msg_packages">%1$d allowed, %2$d blocked</string>
-    <string name="msg_hosts">%1$d allowed, %2$d blocked, %3$d hosts</string>
+    <string name="msg_started">Entgra Firewall</string>
+    <string name="msg_packages">Enforcing firewall rules</string>
+    <string name="msg_hosts">Enforcing firewall rules</string>
     <string name="msg_waiting">Waiting for event</string>
     <string name="msg_disabled">NetGuard is disabled, use the switch above to enable NetGuard</string>
     <string name="msg_revoked">NetGuard has been disabled, likely by using another VPN based app</string>

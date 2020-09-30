@@ -218,6 +218,12 @@
             </intent-filter>
         </service>
 
+        <service android:name=".FirewallService">
+            <intent-filter>
+                <action android:name="io.entgra.firewall.ChangePolicy" />
+            </intent-filter>
+        </service>
+
         <receiver
             android:name=".ReceiverAutostart"
             android:label="@string/app_name">

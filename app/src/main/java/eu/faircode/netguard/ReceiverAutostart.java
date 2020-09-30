@@ -42,13 +42,12 @@ public class ReceiverAutostart extends BroadcastReceiver {
         if (Intent.ACTION_BOOT_COMPLETED.equals(action) || Intent.ACTION_MY_PACKAGE_REPLACED.equals(action))
             try {
                 // Upgrade settings
-                upgrade(true, context);
+                //upgrade(true, context);
+                ServiceSinkhole.start("receiver", context);
 
                 // Start service
                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-                if (prefs.getBoolean("enabled", false))
-                    ServiceSinkhole.start("receiver", context);
-                else if (prefs.getBoolean("show_stats", false))
+                if (prefs.getBoolean("show_stats", false))
                     ServiceSinkhole.run("receiver", context);
 
                 if (Util.isInteractive(context))

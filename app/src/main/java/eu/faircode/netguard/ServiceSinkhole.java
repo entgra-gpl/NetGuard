@@ -114,6 +114,7 @@ public class ServiceSinkhole extends AbstractServiceSinkhole implements SharedPr
     private static final int MSG_STATS_START = 1;
     private static final int MSG_STATS_STOP = 2;
     private static final int MSG_STATS_UPDATE = 3;
+    private static final String RESTART_BROADCAST = "eu.faircode.netguard.Restart";
 
     public static void setPcap(boolean enabled, Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
@@ -1359,6 +1360,11 @@ public class ServiceSinkhole extends AbstractServiceSinkhole implements SharedPr
         showDisabledNotification();
         WidgetMain.updateWidgets(this);
 
+        final Intent i= new Intent();
+        i.setAction(RESTART_BROADCAST);
+        i.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+        getApplicationContext().sendBroadcast(i);
+
         super.onRevoke();
     }
 
@@ -1485,37 +1491,15 @@ public class ServiceSinkhole extends AbstractServiceSinkhole implements SharedPr
                     .setVisibility(NotificationCompat.VISIBILITY_SECRET)
                     .setPriority(NotificationCompat.PRIORITY_MIN);
 
-        if (allowed >= 0)
-            last_allowed = allowed;
-        else
-            allowed = last_allowed;
-        if (blocked >= 0)
-            last_blocked = blocked;
-        else
-            blocked = last_blocked;
-        if (hosts >= 0)
-            last_hosts = hosts;
-        else
-            hosts = last_hosts;
-
-        if (allowed >= 0 || blocked >= 0 || hosts >= 0) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                if (Util.isPlayStoreInstall(this))
-                    builder.setContentText(getString(R.string.msg_packages, allowed, blocked));
-                else
-                    builder.setContentText(getString(R.string.msg_hosts, allowed, blocked, hosts));
-                return builder.build();
-            } else {
-                NotificationCompat.BigTextStyle notification = new NotificationCompat.BigTextStyle(builder);
-                notification.bigText(getString(R.string.msg_started));
-                if (Util.isPlayStoreInstall(this))
-                    notification.setSummaryText(getString(R.string.msg_packages, allowed, blocked));
-                else
-                    notification.setSummaryText(getString(R.string.msg_hosts, allowed, blocked, hosts));
-                return notification.build();
-            }
-        } else
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            builder.setContentText(getString(R.string.msg_packages));
             return builder.build();
+        } else {
+            NotificationCompat.BigTextStyle notification = new NotificationCompat.BigTextStyle(builder);
+            notification.bigText(getString(R.string.msg_started));
+            notification.setSummaryText(getString(R.string.msg_packages));
+            return notification.build();
+        }
     }
 
     private void updateEnforcingNotification(int allowed, int total) {
