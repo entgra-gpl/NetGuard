@@ -1360,7 +1360,8 @@ public class ServiceSinkhole extends AbstractServiceSinkhole implements SharedPr
         showDisabledNotification();
         WidgetMain.updateWidgets(this);
 
-        final Intent i= new Intent();
+        final Intent i = new Intent();
+        i.putExtra(RESTART_BROADCAST,"RESTART_BROADCAST");
         i.setAction(RESTART_BROADCAST);
         i.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
         getApplicationContext().sendBroadcast(i);

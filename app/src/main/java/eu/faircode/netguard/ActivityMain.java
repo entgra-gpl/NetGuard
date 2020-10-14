@@ -186,18 +186,18 @@ public class ActivityMain extends AppCompatActivity implements SharedPreferences
         });
 
         // On/off switch
-        swEnabled.setChecked(enabled);
-        swEnabled.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                Log.i(TAG, "Switch=" + isChecked);
-                prefs.edit().putBoolean("enabled", isChecked).apply();
-
-                if (isChecked) {
-                    switchOnVPN();
-                } else
-                    ServiceSinkhole.stop("switch off", ActivityMain.this, false);
-            }
-        });
+//        swEnabled.setChecked(enabled);
+//        swEnabled.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+//                Log.i(TAG, "Switch=" + isChecked);
+//                prefs.edit().putBoolean("enabled", isChecked).apply();
+//
+//                if (isChecked) {
+//                    switchOnVPN();
+//                } else
+//                    ServiceSinkhole.stop("switch off", ActivityMain.this, false);
+//            }
+//        });
         if (enabled)
             checkDoze();
 

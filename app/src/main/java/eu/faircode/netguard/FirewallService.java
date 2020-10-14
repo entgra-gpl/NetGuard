@@ -12,6 +12,7 @@ import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 public class FirewallService extends Service {
 
@@ -29,7 +30,11 @@ public class FirewallService extends Service {
             try {
                 JSONArray apps = new JSONArray(aString);
                 for (int i = 0; i < apps.length(); i++) {
-                    changeDataState(apps.getString(i), true, true);
+                    JSONObject app = apps.getJSONObject(i);
+                    String packageName = app.getString("packageName");
+                    boolean isWiFiOff = app.getBoolean("isWifiOff");
+                    boolean isMobileOff = app.getBoolean("isMobileOff");
+                    changeDataState(packageName, isWiFiOff, isMobileOff);
                 }
                 ServiceSinkhole.reload("ui", FirewallService.this, false);
             } catch (JSONException e) {
@@ -65,18 +70,9 @@ public class FirewallService extends Service {
     private void changeDataState(String packageName, boolean offWiFi, boolean offMobileData) {
         SharedPreferences wifi = this.getSharedPreferences("wifi", Context.MODE_PRIVATE);
         SharedPreferences other = this.getSharedPreferences("other", Context.MODE_PRIVATE);
-        if (offWiFi) {
-            wifi.edit().putBoolean(packageName, offWiFi).apply();
-        } else {
-            wifi.edit().remove(packageName).apply();
-        }
 
-        if (offMobileData) {
-            other.edit().putBoolean(packageName, offMobileData).apply();
-        } else {
-            other.edit().remove(packageName).apply();
-        }
-//        ServiceSinkhole.reload("switch off", this, false);
+        wifi.edit().putBoolean(packageName, offWiFi).apply();
+        other.edit().putBoolean(packageName, offMobileData).apply();
     }
 
 
