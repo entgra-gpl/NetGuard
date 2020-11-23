@@ -20,6 +20,7 @@ package eu.faircode.netguard;
 */
 
 import android.annotation.TargetApi;
+import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -44,6 +45,7 @@ import android.net.NetworkRequest;
 import android.net.TrafficStats;
 import android.net.Uri;
 import android.net.VpnService;
+import android.os.Binder;
 import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -52,6 +54,7 @@ import android.os.Message;
 import android.os.ParcelFileDescriptor;
 import android.os.PowerManager;
 import android.os.Process;
+import android.os.RemoteException;
 import android.os.SystemClock;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
@@ -114,6 +117,9 @@ public class ServiceSinkhole extends AbstractServiceSinkhole implements SharedPr
     private static final int MSG_STATS_START = 1;
     private static final int MSG_STATS_STOP = 2;
     private static final int MSG_STATS_UPDATE = 3;
+    public static final String APPLY_APP_USAGE_POLICY = "eu.faircode.netguard.APPLY_APP_USAGE_POLICY";
+    public static final String REMOVE_APP_USAGE_POLICY = "eu.faircode.netguard.REMOVE_APP_USAGE_POLICY";
+    public static final String INTENT_EXTRA_OPERATION_PAYLOAD = "payload";
     private static final String RESTART_BROADCAST = "eu.faircode.netguard.Restart";
 
     public static void setPcap(boolean enabled, Context context) {
@@ -1218,10 +1224,29 @@ public class ServiceSinkhole extends AbstractServiceSinkhole implements SharedPr
         }
     }
 
+    public static boolean isServiceNotRunning(Context context, Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        if (manager != null) {
+            for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+                if (serviceClass.getName().equals(service.service.getClassName())) {
+                    return false; //Service is running
+                }
+            }
+        } else {
+            Log.e(TAG, "Activity manager unavailable");
+        }
+        return true;
+    }
+
     @Override
     public void onCreate() {
         Log.i(TAG, "Create version=" + Util.getSelfVersionName(this) + "/" + Util.getSelfVersionCode(this));
         startForeground(NOTIFY_WAITING, getWaitingNotification());
+
+        if (isServiceNotRunning(this, AgentCommunicationService.class)) {
+            Intent serviceIntent = new Intent(this, AgentCommunicationService.class);
+            this.startService(serviceIntent);
+        }
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -1332,14 +1357,74 @@ public class ServiceSinkhole extends AbstractServiceSinkhole implements SharedPr
         }
     }
 
+    public static void controlDataOfPackage(Context context, String aString){
+        try {
+            JSONArray apps = new JSONArray(aString);
+            for (int i = 0; i < apps.length(); i++) {
+                JSONObject app = apps.getJSONObject(i);
+                String packageName = app.getString("packageName");
+                boolean isWiFiOff = app.getBoolean("isWifiOff");
+                boolean isMobileOff = app.getBoolean("isMobileOff");
+                changeDataState(context, packageName, isWiFiOff, isMobileOff);
+            }
+            reload("ui", context, false);
+        } catch (JSONException e) {
+            Log.e(TAG, "Could not parse VPN firewall rules");
+        }
+    }
+
+    public static void revokePolicy(Context context, String aString) {
+        try {
+            JSONArray apps = new JSONArray(aString);
+            for (int i = 0; i < apps.length(); i++) {
+                changeDataState(context, apps.getString(i), false, false);
+            }
+            reload("ui", context, false);
+        } catch (JSONException e) {
+            Log.e(TAG, "Could not parse VPN firewall rules");
+        }
+    }
+
+    private static void changeDataState(Context context, String packageName, boolean offWiFi, boolean offMobileData) {
+        SharedPreferences wifi = context.getSharedPreferences("wifi", Context.MODE_PRIVATE);
+        SharedPreferences other = context.getSharedPreferences("other", Context.MODE_PRIVATE);
+
+        wifi.edit().putBoolean(packageName, offWiFi).apply();
+        other.edit().putBoolean(packageName, offMobileData).apply();
+    }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (state == State.enforcing)
-            startForeground(NOTIFY_ENFORCING, getEnforcingNotification(-1, -1, -1));
-        else
-            startForeground(NOTIFY_WAITING, getWaitingNotification());
+
+        boolean messageFromEntgraAgent = false;
+        if (intent != null && intent.getAction() != null) {
+            Log.i(TAG, " Action: " + intent.getAction());
+            switch (intent.getAction()) {
+                case APPLY_APP_USAGE_POLICY:
+                    controlDataOfPackage(this, intent.getExtras().getString(INTENT_EXTRA_OPERATION_PAYLOAD));
+                    messageFromEntgraAgent = true;
+                    break;
+                case REMOVE_APP_USAGE_POLICY:
+                    revokePolicy(this, intent.getExtras().getString(INTENT_EXTRA_OPERATION_PAYLOAD));
+                    messageFromEntgraAgent = true;
+                    break;
+            }
+        }
+
+        if (!messageFromEntgraAgent) {
+            if (state == State.enforcing)
+                startForeground(NOTIFY_ENFORCING, getEnforcingNotification(-1, -1, -1));
+            else
+                startForeground(NOTIFY_WAITING, getWaitingNotification());
+        }
 
         return super.onStartCommand(intent, flags, startId);
+    }
+
+    public class LocalBinder extends Binder {
+        public ServiceSinkhole getService() {
+            return ServiceSinkhole.this;
+        }
     }
 
     protected void set(Intent intent) {
@@ -1356,6 +1441,7 @@ public class ServiceSinkhole extends AbstractServiceSinkhole implements SharedPr
 
     @Override
     public void onRevoke() {
+        Log.d(TAG, "onRevoke called");
         // Feedback
         showDisabledNotification();
         WidgetMain.updateWidgets(this);
@@ -1413,6 +1499,11 @@ public class ServiceSinkhole extends AbstractServiceSinkhole implements SharedPr
             if (registeredConnectivityChanged) {
                 unregisterReceiver(connectivityChangedReceiver);
                 registeredConnectivityChanged = false;
+            }
+
+            if (!isServiceNotRunning(this, AgentCommunicationService.class)) {
+                Intent serviceIntent = new Intent(this, AgentCommunicationService.class);
+                stopService(serviceIntent);
             }
 
             ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);

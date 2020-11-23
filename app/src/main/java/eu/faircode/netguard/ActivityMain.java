@@ -101,12 +101,14 @@ public class ActivityMain extends AppCompatActivity implements SharedPreferences
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         // THE APP LISTING IS JUST HIDDEN FROM LAYOUT XML. -> setContentView(R.layout.main);
         // closeIfUnnecessary() from on resume blocks app from opening
+        //Make buttons unclickable with following config
+        prefs.edit().putBoolean("disable_buttons_via_entgra", true).apply();
 
 
-        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         Log.i(TAG, "Create version=" + Util.getSelfVersionName(this) + "/" + Util.getSelfVersionCode(this));
         Util.logExtras(getIntent());
@@ -308,10 +310,13 @@ public class ActivityMain extends AppCompatActivity implements SharedPreferences
 
     private void setTheme() {
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-//        swEnabled.setVisibility(View.GONE);
-        prefs.edit().putBoolean("manage_system", true);
-        prefs.edit().putBoolean("whitelist_wifi", false);
-        prefs.edit().putBoolean("show_system", true).apply();
+        //TODO: change manage system to true
+
+        prefs.edit().putBoolean("whitelist_wifi", false).apply();
+        prefs.edit().putBoolean("whitelist_other", false).apply();
+
+        prefs.edit().putBoolean("show_system", false).apply(); // Show or not system apps in list
+        prefs.edit().putBoolean("manage_system", true).apply(); // Manage or not system apps
         switchOnVPN();
     }
 

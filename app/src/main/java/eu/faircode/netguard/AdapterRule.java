@@ -255,6 +255,8 @@ public class AdapterRule extends RecyclerView.Adapter<AdapterRule.ViewHolder> im
                     otherParent.setTouchDelegate(new TouchDelegate(rect, cbOther));
                 }
             });
+            llConfiguration.setVisibility(View.GONE);
+            ivExpander.setClickable(false);
         }
     }
 
@@ -459,8 +461,15 @@ public class AdapterRule extends RecyclerView.Adapter<AdapterRule.ViewHolder> im
         holder.tvRemarkMessaging.setVisibility(messaging.contains(rule.packageName) ? View.VISIBLE : View.GONE);
         holder.tvRemarkDownload.setVisibility(download.contains(rule.packageName) ? View.VISIBLE : View.GONE);
 
-        // Expanded configuration section
-        holder.llConfiguration.setVisibility(rule.expanded ? View.VISIBLE : View.GONE);
+        if (prefs.getBoolean("disable_buttons_via_entgra", true)) {
+            holder.cbWifi.setClickable(false);
+            holder.cbOther.setClickable(false);
+        } else {
+            // Expanded configuration section
+            holder.llConfiguration.setVisibility(rule.expanded ? View.VISIBLE : View.GONE);
+            holder.cbWifi.setClickable(true);
+            holder.cbOther.setClickable(true);
+        }
 
         // Show application details
         holder.tvUid.setText(Integer.toString(rule.uid));

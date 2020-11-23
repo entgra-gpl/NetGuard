@@ -171,6 +171,14 @@
         </service>
 
         <service
+            android:name=".AgentCommunicationService">
+            <intent-filter>
+                <action android:name="eu.faircode.netguard.APPLY_APP_USAGE_POLICY" />
+                <action android:name="eu.faircode.netguard.REMOVE_APP_USAGE_POLICY" />
+            </intent-filter>
+        </service>
+
+        <service
             android:name=".ServiceExternal"
             android:label="@string/app_name">
             <intent-filter>

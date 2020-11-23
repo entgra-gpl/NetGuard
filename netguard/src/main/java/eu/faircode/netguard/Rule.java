@@ -357,13 +357,6 @@ public class Rule {
                                     (show_nointernet || rule.internet) &&
                                     (show_disabled || rule.enabled))) {
 
-                        if (info.packageName.equals("com.ubercab")) {
-                            Log.e("asd", "asdas");
-                        }
-                        if (info.packageName.equals("com.samsung.android.app.aodservice")) {
-                            Log.e("asd", "asdas");
-                        }
-
                         rule.wifi_default = (pre_wifi_blocked.containsKey(info.packageName) ? pre_wifi_blocked.get(info.packageName) : default_wifi);
                         rule.other_default = (pre_other_blocked.containsKey(info.packageName) ? pre_other_blocked.get(info.packageName) : default_other);
                         rule.screen_wifi_default = default_screen_wifi;
