@@ -18,6 +18,14 @@
 
     <wifi
         blocked="false"
+        package="io.entgra.iot.agent" />
+    <other
+        blocked="false"
+        package="io.entgra.iot.agent"
+        roaming="false" />
+
+    <wifi
+        blocked="false"
         package="com.google.android.apps.adm" />
     <other
         blocked="false"
